@@ -14,43 +14,36 @@ def get_page_data(url):
     html = urlopen(req)
     
     bs = BeautifulSoup(html.read(), "html.parser")
-    links = bs.find('div', {
-        'class': 'home-categories'
-    })
-
-    .find_all(
-        'h4',
-        {
-            'class': 'menu-item-header'
-        }
-    )
-    print(links)
-    return {
-        'bs': bs,
-#        'categories': categories
-    }
+    items = bs.find_all('div', {'class': 'ui-item'})
+    return items
 
 
-def get_categories(raw_data):
-    pass
+def find_link(item):
+    link = item.find('a')
+    return link.attrs['href']
 
-
-def prepare_response():
-    pass
-
-
+    
+def prepare_response(links):
+    str="<ol>"
+    for l in links:
+        str += '<li><a href="https://bikroy.com/{}">{}</a></li>'.format(l,l)
+    str += "</ol>"
+    return str
+    
 
 @app.route('/')
 def index():
-    url = "https://bikroy.com/"
-    raw_data = get_page_data(url)
-    #print(raw_data['categories'])
-    return "Done"
-    categories = get_categories(raw_data)
-    print(categories)
 
-    parsed_response = prepare_response()
-
+    links = set()
+    for i in range(1,10):
+        url = "https://bikroy.com/bn/ads/bangladesh/vehicles?page={}".format(i)
+        raw_data = get_page_data(url)
+        for r in raw_data:
+            link = find_link(r)
+            links.add(link)
+            
+    parsed_response = prepare_response(links) 
+    return parsed_response
 
 if __name__ == "__main__":
     app.run()
